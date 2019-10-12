@@ -11,7 +11,7 @@ public class HibernateUtils {
     private static final SessionFactory sessionFactory = buildSessionFactory();
 
     private static SessionFactory buildSessionFactory() {
-        try{
+        try {
             ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                     .configure("hibernate.cfg.xml")
                     .build();
