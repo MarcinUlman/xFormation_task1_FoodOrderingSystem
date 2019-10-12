@@ -1,11 +1,18 @@
 package dev.ulman.restaurant.model;
 
+import javax.persistence.*;
 import java.util.Collection;
 
+@Entity
+@Table (name = "Cuisines")
 public class Cuisine {
 
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column (name = "CuisineID")
     private int id;
     private String name;
+    @OneToMany (mappedBy = "cuisine", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     private Collection<Product> products;
 
     public Cuisine() {
