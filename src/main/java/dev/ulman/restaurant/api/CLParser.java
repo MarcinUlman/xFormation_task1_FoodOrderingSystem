@@ -90,12 +90,19 @@ public class CLParser {
                 apiUtils.addNewCuisine(value);
             } else if (commandLine.hasOption("addProduct")) {
                 String[] values = commandLine.getOptionValues("addProduct");
-                apiUtils.addNewProduct(values[0], new BigDecimal(values[1]), values[2]);
+                BigDecimal price;
+                try {
+                    price = new BigDecimal(values[1]);
+                    apiUtils.addNewProduct(values[0], price, values[2]);
+                } catch (NumberFormatException e) {
+                    System.out.println(values[1] + " this is not a number. Try like this: 15.33");
+                }
             } else System.out.println("This is not recognized option. Try --help");
 
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
     }
 
 
