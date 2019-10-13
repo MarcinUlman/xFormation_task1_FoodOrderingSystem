@@ -75,7 +75,7 @@ public class Order {
     }
 
     public String toString() {
-        DecimalFormat decimalFormat = new DecimalFormat("###.00");
+        DecimalFormat decimalFormat = new DecimalFormat("##0.00");
 
         StringBuilder sb = new StringBuilder();
         Iterator<Map.Entry<Product, Integer>> iter = products.entrySet().iterator();

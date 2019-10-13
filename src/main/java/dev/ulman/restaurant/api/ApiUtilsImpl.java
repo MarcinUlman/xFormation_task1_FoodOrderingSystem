@@ -32,7 +32,9 @@ public class ApiUtilsImpl implements ApiUtils {
 
     @Override
     public void paidBill() {
-        System.out.println(orderDao.getOrder(1));
+        Order order = orderDao.getOrder(1);
+        if (order != null)
+            System.out.println(orderDao.getOrder(1));
         orderDao.deleteOrder(1);
     }
 
@@ -76,7 +78,7 @@ public class ApiUtilsImpl implements ApiUtils {
 
         Product addProduct = productDao.getProduct(additionToDrink);
         if (addProduct == null || !isAdditionToDrink(addProduct)) {
-            System.out.println(additionToDrink + " is not drink");
+            System.out.println(additionToDrink + " is not addition to drink");
             return;
         }
         checkOrderExist();

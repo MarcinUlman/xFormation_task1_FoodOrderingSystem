@@ -99,6 +99,8 @@ public class CLParser {
                 }
             } else System.out.println("This is not recognized option. Try --help");
 
+        } catch (MissingArgumentException e) {
+            System.out.println("Sorry but you miss an argument. Try --help");
         } catch (ParseException e) {
             e.printStackTrace();
         }
