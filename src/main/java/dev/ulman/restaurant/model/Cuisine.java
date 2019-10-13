@@ -1,7 +1,9 @@
 package dev.ulman.restaurant.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Table (name = "Cuisines")
@@ -16,6 +18,7 @@ public class Cuisine {
     private Collection<Product> products;
 
     public Cuisine() {
+        products = new ArrayList<>();
     }
 
     public Cuisine(String name) {
@@ -49,5 +52,18 @@ public class Cuisine {
     @Override
     public String toString() {
         return String.format("%2d. %s", id, name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cuisine cuisine = (Cuisine) o;
+        return name.equals(cuisine.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
