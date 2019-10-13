@@ -45,4 +45,9 @@ public class Cuisine {
     public void setProducts(Collection<Product> products) {
         this.products = products;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%2d. %s", id, name);
+    }
 }

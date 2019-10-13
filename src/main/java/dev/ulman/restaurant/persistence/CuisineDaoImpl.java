@@ -7,9 +7,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CuisineDaoImpl implements CuisineDao {
@@ -17,7 +19,7 @@ public class CuisineDaoImpl implements CuisineDao {
     private final SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
 
     @Override
-    public Cuisine getCuisineById(int id) {
+    public Cuisine getCuisine(int id) {
         Cuisine cuisine = null;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -32,10 +34,10 @@ public class CuisineDaoImpl implements CuisineDao {
     }
 
     @Override
-    public Cuisine getCuisineByName(String name) {
+    public Cuisine getCuisine(String name) {
         Cuisine cuisine = null;
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()){
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -47,7 +49,11 @@ public class CuisineDaoImpl implements CuisineDao {
 
             Query<Cuisine> query = session.createQuery(criteriaQuery);
 
-            cuisine = query.getSingleResult();
+            try {
+                cuisine = query.getSingleResult();
+            } catch (NoResultException e){
+                cuisine = null;
+            }
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
@@ -57,11 +63,16 @@ public class CuisineDaoImpl implements CuisineDao {
 
     @Override
     public void addCuisine(Cuisine cuisine) {
+        if (isCuisineExist(cuisine.getName())){
+            System.out.println("Cuisine already exist");
+            return;
+        }
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.save(cuisine);
             transaction.commit();
+            System.out.println("Cuisine successfully added");
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
@@ -74,22 +85,14 @@ public class CuisineDaoImpl implements CuisineDao {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Cuisine cuisine = session.get(Cuisine.class, id);
-            if (cuisine != null) session.delete(cuisine);
+            if (cuisine == null) {
+                transaction.commit();
+                System.out.println("Cuisine does not exist. Add it first");
+                return;
+            }
+            session.delete(cuisine);
             transaction.commit();
-        } catch (Exception e){
-            e.printStackTrace();
-            if (transaction != null) transaction.rollback();
-        }
-    }
-
-    @Override
-    public void updateCuisine(int id, Cuisine cuisine) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            cuisine.setId(id);
-            session.saveOrUpdate(cuisine);
-            transaction.commit();
+            System.out.println("Cuisine successfully deleted");
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
@@ -114,6 +117,7 @@ public class CuisineDaoImpl implements CuisineDao {
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
+            if (transaction != null) transaction.rollback();
         }
 
         return cuisines;
@@ -121,11 +125,12 @@ public class CuisineDaoImpl implements CuisineDao {
 
     @Override
     public List<Product> getCuisineProducts(String cuisineName) {
+        List<Product> products = new ArrayList<>();
+        if (!isCuisineExist(cuisineName)) return products;
         Transaction transaction = null;
-        List<Product> products = null;
         try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
-            Cuisine cuisine = getCuisineByName(cuisineName);
+            Cuisine cuisine = getCuisine(cuisineName);
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
             CriteriaQuery<Product> criteriaQuery = criteriaBuilder.createQuery(Product.class);
@@ -138,8 +143,14 @@ public class CuisineDaoImpl implements CuisineDao {
             transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
+            if (transaction != null) transaction.rollback();
         }
 
         return products;
+    }
+
+    @Override
+    public boolean isCuisineExist(String name) {
+        return getCuisine(name) != null;
     }
 }
