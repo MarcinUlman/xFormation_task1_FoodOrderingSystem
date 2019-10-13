@@ -25,6 +25,29 @@ public class Order {
     this.products = new HashMap<Product, Integer>();
     }
 
+    public void addProduct(Product product, int quantity){
+        if (!this.products.containsKey(product)){
+            this.products.put(product, quantity);
+            BigDecimal costToAdd = new BigDecimal(quantity).multiply(product.getPrice());
+            this.totalCost.add(costToAdd);
+        } else {
+            BigDecimal costToAdd = new BigDecimal(quantity).multiply(product.getPrice());
+            quantity += this.products.get(product);
+            if (quantity <= 0) removeProduct(product);
+            else {
+                this.totalCost.add(costToAdd);
+                this.products.put(product, quantity);
+            }
+        }
+    }
+
+    private void removeProduct(Product product) {
+        if (products.isEmpty()) return;
+        BigDecimal costToSubtract  = new BigDecimal(products.get(product)).multiply(product.getPrice());
+        this.totalCost.subtract(costToSubtract);
+        this.products.remove(product);
+    }
+
     public int getId() {
         return id;
     }
