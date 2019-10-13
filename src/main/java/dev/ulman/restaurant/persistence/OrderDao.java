@@ -5,7 +5,7 @@ import dev.ulman.restaurant.model.Product;
 
 public interface OrderDao {
 
-    Order getOrderById(int id);
+    Order getOrder(int id);
 
     void addOrder(Order order);
     void deleteOrder(int id);

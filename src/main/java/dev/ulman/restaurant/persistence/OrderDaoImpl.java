@@ -11,7 +11,7 @@ public class OrderDaoImpl implements OrderDao {
     private final SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
 
     @Override
-    public Order getOrderById(int id) {
+    public Order getOrder(int id) {
         Order order = null;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -44,8 +44,14 @@ public class OrderDaoImpl implements OrderDao {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Order order = session.get(Order.class, id);
-            if (order != null) session.delete(order);
+            if (order == null) {
+                transaction.commit();
+                System.out.println("Order does not exist.");
+                return;
+            }
+            session.delete(order);
             transaction.commit();
+            System.out.println("Order successfully deleted");
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
@@ -64,6 +70,12 @@ public class OrderDaoImpl implements OrderDao {
                 return;
             }
 
+            ProductDao productDao = new ProductDaoImpl();
+            if (!productDao.isProductExist(product.getName())) {
+                System.out.println("Product does not exist. Add it first");
+                return;
+            }
+
             order.addProduct(product, quantity);
             session.merge(order);
 
@@ -71,6 +83,9 @@ public class OrderDaoImpl implements OrderDao {
             System.out.println("Product successful add to order");
         } catch (Exception e){
             e.printStackTrace();
+            if (transaction != null) transaction.rollback();
         }
     }
+
+
 }
