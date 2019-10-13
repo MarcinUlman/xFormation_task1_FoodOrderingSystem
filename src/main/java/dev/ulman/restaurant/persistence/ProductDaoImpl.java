@@ -1,6 +1,6 @@
 package dev.ulman.restaurant.persistence;
 
-import dev.ulman.restaurant.model.Cuisine;
+import dev.ulman.restaurant.model.Product;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -10,69 +10,55 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-public class CuisineDaoImpl implements CuisineDao {
+public class ProductDaoImpl implements ProductDao {
 
     private final SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
 
     @Override
-    public Cuisine getCuisineById(int id) {
-        Cuisine cuisine = null;
+    public Product getProductById(int id) {
+        Product product = null;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            cuisine = session.get(Cuisine.class, id);
+            product = session.get(Product.class, id);
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
         }
-        return cuisine;
+        return product;
     }
 
     @Override
-    public Cuisine getCuisineByName(String name) {
-        Cuisine cuisine = null;
+    public Product getProductByName(String name) {
+        Product product = null;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()){
             transaction = session.beginTransaction();
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-            CriteriaQuery<Cuisine> criteriaQuery = criteriaBuilder.createQuery(Cuisine.class);
-            Root<Cuisine> root = criteriaQuery.from(Cuisine.class);
+            CriteriaQuery<Product> criteriaQuery = criteriaBuilder.createQuery(Product.class);
+            Root<Product> root = criteriaQuery.from(Product.class);
 
             criteriaQuery.select(root)
                     .where(criteriaBuilder.equal(root.get("name"), name));
 
-            Query<Cuisine> query = session.createQuery(criteriaQuery);
+            Query<Product> query = session.createQuery(criteriaQuery);
 
-            cuisine = query.getSingleResult();
+            product = query.getSingleResult();
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
         }
-        return cuisine;
+        return product;
     }
 
     @Override
-    public void addCuisine(Cuisine cuisine) {
+    public void addProduct(Product product) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.save(cuisine);
-            transaction.commit();
-        } catch (Exception e){
-            e.printStackTrace();
-            if (transaction != null) transaction.rollback();
-        }
-    }
-
-    @Override
-    public void deleteCuisine(int id) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            Cuisine cuisine = session.get(Cuisine.class, id);
-            if (cuisine != null) session.delete(cuisine);
+            session.save(product);
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
@@ -81,12 +67,26 @@ public class CuisineDaoImpl implements CuisineDao {
     }
 
     @Override
-    public void updateCuisine(int id, Cuisine cuisine) {
+    public void deleteProduct(int id) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            cuisine.setId(id);
-            session.saveOrUpdate(cuisine);
+            Product product = session.get(Product.class, id);
+            if (product != null) session.delete(product);
+            transaction.commit();
+        } catch (Exception e){
+            e.printStackTrace();
+            if (transaction != null) transaction.rollback();
+        }
+    }
+
+    @Override
+    public void updateProduct(int id, Product product) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            product.setId(id);
+            session.saveOrUpdate(product);
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
