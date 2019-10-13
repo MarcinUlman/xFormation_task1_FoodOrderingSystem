@@ -57,4 +57,9 @@ public class Product {
     public void setCuisine(Cuisine cuisine) {
         this.cuisine = cuisine;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%3d. %-30s %6.2f", id, name, price);
+    }
 }

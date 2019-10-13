@@ -3,7 +3,6 @@ package dev.ulman.restaurant.persistence;
 import dev.ulman.restaurant.model.Cuisine;
 import dev.ulman.restaurant.model.Product;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 
 public interface CuisineDao {

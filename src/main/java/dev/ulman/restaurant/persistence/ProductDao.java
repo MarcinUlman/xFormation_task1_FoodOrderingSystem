@@ -4,12 +4,14 @@ import dev.ulman.restaurant.model.Product;
 
 public interface ProductDao {
 
-    Product getProductById(int id);
-    Product getProductByName(String name);
+    Product getProduct(int id);
+    Product getProduct(String name);
 
     void addProduct(Product product);
     void deleteProduct(int id);
 
     void updateProduct(int id, Product product);
+
+    boolean isProductExist(String name);
 
 }

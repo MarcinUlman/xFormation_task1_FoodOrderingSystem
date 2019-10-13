@@ -6,6 +6,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -15,7 +16,7 @@ public class ProductDaoImpl implements ProductDao {
     private final SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
 
     @Override
-    public Product getProductById(int id) {
+    public Product getProduct(int id) {
         Product product = null;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
@@ -30,10 +31,10 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
-    public Product getProductByName(String name) {
+    public Product getProduct(String name) {
         Product product = null;
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()){
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
             CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -45,21 +46,36 @@ public class ProductDaoImpl implements ProductDao {
 
             Query<Product> query = session.createQuery(criteriaQuery);
 
-            product = query.getSingleResult();
+            try {
+                product = query.getSingleResult();
+            } catch (NoResultException e){
+                product = null;
+            }
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
+            if (transaction != null) transaction.rollback();
         }
         return product;
     }
 
     @Override
     public void addProduct(Product product) {
+        if (isProductExist(product.getName())) {
+            System.out.printf("Product named '%s' already exist\n", product.getName());
+            return;
+        }
+        CuisineDao cuisineDao = new CuisineDaoImpl();
+        if(!cuisineDao.isCuisineExist(product.getCuisine().getName())) {
+            System.out.println("Cuisine does not exist. Add it first");
+            return;
+        }
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.save(product);
             transaction.commit();
+            System.out.println("Product successfully added");
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
@@ -68,12 +84,19 @@ public class ProductDaoImpl implements ProductDao {
 
     @Override
     public void deleteProduct(int id) {
+
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             Product product = session.get(Product.class, id);
-            if (product != null) session.delete(product);
+            if (product == null) {
+                transaction.commit();
+                System.out.println("Product does not exist. Add it first");
+                return;
+            }
+            session.delete(product);
             transaction.commit();
+            System.out.println("Product successfully deleted");
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
@@ -85,12 +108,33 @@ public class ProductDaoImpl implements ProductDao {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            product.setId(id);
-            session.saveOrUpdate(product);
+
+            Product existingProduct = session.get(Product.class, id);
+            if (existingProduct == null) {
+                transaction.commit();
+                System.out.println("Could not modify product because it's not exist. Add it first.");
+                return;
+            }
+
+            CuisineDao cuisineDao = new CuisineDaoImpl();
+            if(!cuisineDao.isCuisineExist(product.getCuisine().getName())) {
+                System.out.println("Cuisine does not exist. Add it first");
+                return;
+            }
+
+            existingProduct.setName(product.getName());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setCuisine(product.getCuisine());
+            session.update(existingProduct);
             transaction.commit();
         } catch (Exception e){
             e.printStackTrace();
             if (transaction != null) transaction.rollback();
         }
     }
+
+    @Override
+    public boolean isProductExist(String name) {
+            return getProduct(name) != null;
+        }
 }
